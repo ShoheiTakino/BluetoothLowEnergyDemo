@@ -2,20 +2,21 @@ import SwiftUI
 import CoreBluetooth
 
 struct ContentView: View {
-    @State private var ble = BLEManager()
+    @State private var viewModel = BLEViewModel()
     @State private var inputText = ""
     @FocusState private var isInputFocused: Bool
 
     var body: some View {
         NavigationStack {
             Group {
-                if ble.mode == .idle {
-                    ModeSelectionView(ble: ble)
+                if viewModel.mode == .idle {
+                    ModeSelectionView(viewModel: viewModel)
                 } else {
-                    ChatView(ble: ble, inputText: $inputText, isInputFocused: $isInputFocused)
+                    ChatView(viewModel: viewModel, inputText: $inputText, isInputFocused: $isInputFocused)
                 }
             }
             .navigationTitle("BLE Demo")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
@@ -23,7 +24,7 @@ struct ContentView: View {
 // MARK: - Mode Selection
 
 struct ModeSelectionView: View {
-    let ble: BLEManager
+    let viewModel: BLEViewModel
 
     var body: some View {
         VStack(spacing: 32) {
@@ -48,7 +49,7 @@ struct ModeSelectionView: View {
                     icon: "magnifyingglass.circle.fill",
                     color: .blue
                 ) {
-                    ble.startAsCentral()
+                    viewModel.startAsCentral()
                 }
 
                 ModeButton(
@@ -57,7 +58,7 @@ struct ModeSelectionView: View {
                     icon: "antenna.radiowaves.left.and.right.circle.fill",
                     color: .green
                 ) {
-                    ble.startAsPeripheral()
+                    viewModel.startAsPeripheral()
                 }
             }
             .padding(.horizontal)
@@ -105,26 +106,26 @@ struct ModeButton: View {
 // MARK: - Chat View
 
 struct ChatView: View {
-    var ble: BLEManager
+    let viewModel: BLEViewModel
     @Binding var inputText: String
     @FocusState.Binding var isInputFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
-            StatusBanner(ble: ble)
+            StatusBanner(viewModel: viewModel)
 
-            if ble.mode == .central && ble.connectedPeripheral == nil {
-                PeripheralListView(ble: ble)
+            if viewModel.mode == .central && viewModel.connectedPeripheral == nil {
+                PeripheralListView(viewModel: viewModel)
             }
 
-            MessageList(ble: ble)
+            MessageList(viewModel: viewModel)
 
-            InputBar(ble: ble, inputText: $inputText, isInputFocused: $isInputFocused)
+            InputBar(viewModel: viewModel, inputText: $inputText, isInputFocused: $isInputFocused)
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("停止", role: .destructive) {
-                    ble.stopAll()
+                    viewModel.stopAll()
                 }
                 .foregroundStyle(.red)
             }
@@ -135,34 +136,34 @@ struct ChatView: View {
 // MARK: - Status Banner
 
 struct StatusBanner: View {
-    var ble: BLEManager
+    let viewModel: BLEViewModel
 
     var statusText: String {
-        switch ble.mode {
+        switch viewModel.mode {
         case .central:
-            if let name = ble.connectedPeripheral?.name {
+            if let name = viewModel.connectedPeripheral?.name {
                 return "接続済み: \(name)"
-            } else if !ble.discoveredPeripherals.isEmpty {
+            } else if !viewModel.discoveredPeripherals.isEmpty {
                 return "デバイスが見つかりました"
             }
             return "スキャン中..."
         case .peripheral:
-            return ble.subscribedCentralCount > 0 ? "Central が接続中" : "アドバタイズ中..."
+            return viewModel.subscribedCentralCount > 0 ? "Central が接続中" : "アドバタイズ中..."
         case .idle:
             return "待機中"
         }
     }
 
     var isConnected: Bool {
-        switch ble.mode {
-        case .central: ble.connectedPeripheral != nil
-        case .peripheral: ble.subscribedCentralCount > 0
+        switch viewModel.mode {
+        case .central: viewModel.connectedPeripheral != nil
+        case .peripheral: viewModel.subscribedCentralCount > 0
         case .idle: false
         }
     }
 
     var modeLabel: String {
-        switch ble.mode {
+        switch viewModel.mode {
         case .central: "Central"
         case .peripheral: "Peripheral"
         case .idle: ""
@@ -194,7 +195,7 @@ struct StatusBanner: View {
 // MARK: - Peripheral List (Central only)
 
 struct PeripheralListView: View {
-    var ble: BLEManager
+    let viewModel: BLEViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -204,7 +205,7 @@ struct PeripheralListView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
 
-            if ble.discoveredPeripherals.isEmpty {
+            if viewModel.discoveredPeripherals.isEmpty {
                 HStack {
                     ProgressView()
                         .scaleEffect(0.8)
@@ -214,9 +215,9 @@ struct PeripheralListView: View {
                 }
                 .padding()
             } else {
-                ForEach(ble.discoveredPeripherals, id: \.identifier) { peripheral in
+                ForEach(viewModel.discoveredPeripherals, id: \.identifier) { peripheral in
                     Button {
-                        ble.connect(to: peripheral)
+                        viewModel.connect(to: peripheral)
                     } label: {
                         HStack {
                             Image(systemName: "antenna.radiowaves.left.and.right")
@@ -236,9 +237,7 @@ struct PeripheralListView: View {
             }
         }
         .background(Color(white: 1.0))
-        .overlay(alignment: .bottom) {
-            Divider()
-        }
+        .overlay(alignment: .bottom) { Divider() }
         .frame(maxHeight: 200)
     }
 }
@@ -246,21 +245,21 @@ struct PeripheralListView: View {
 // MARK: - Message List
 
 struct MessageList: View {
-    var ble: BLEManager
+    let viewModel: BLEViewModel
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 4) {
-                    ForEach(ble.messages) { message in
+                    ForEach(viewModel.messages) { message in
                         MessageBubble(message: message)
                             .id(message.id)
                     }
 
-                    if !ble.logs.isEmpty {
+                    if !viewModel.logs.isEmpty {
                         Divider()
                             .padding(.vertical, 8)
-                        ForEach(Array(ble.logs.enumerated()), id: \.offset) { index, log in
+                        ForEach(Array(viewModel.logs.enumerated()), id: \.offset) { index, log in
                             HStack {
                                 Text(log)
                                     .font(.caption2)
@@ -274,18 +273,14 @@ struct MessageList: View {
                 }
                 .padding(.vertical, 12)
             }
-            .onChange(of: ble.logs.count) {
-                if let lastIndex = ble.logs.indices.last {
-                    withAnimation {
-                        proxy.scrollTo("log_\(lastIndex)", anchor: .bottom)
-                    }
+            .onChange(of: viewModel.logs.count) {
+                if let lastIndex = viewModel.logs.indices.last {
+                    withAnimation { proxy.scrollTo("log_\(lastIndex)", anchor: .bottom) }
                 }
             }
-            .onChange(of: ble.messages.count) {
-                if let last = ble.messages.last {
-                    withAnimation {
-                        proxy.scrollTo(last.id, anchor: .bottom)
-                    }
+            .onChange(of: viewModel.messages.count) {
+                if let last = viewModel.messages.last {
+                    withAnimation { proxy.scrollTo(last.id, anchor: .bottom) }
                 }
             }
         }
@@ -303,7 +298,7 @@ struct MessageBubble: View {
                 Text(message.text)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(message.isSent ? Color.blue : Color(.systemGray5))
+                    .background(message.isSent ? Color.blue : Color.gray.opacity(0.2))
                     .foregroundStyle(message.isSent ? .white : .primary)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
 
@@ -323,17 +318,12 @@ struct MessageBubble: View {
 // MARK: - Input Bar
 
 struct InputBar: View {
-    var ble: BLEManager
+    let viewModel: BLEViewModel
     @Binding var inputText: String
     @FocusState.Binding var isInputFocused: Bool
 
-    var canSend: Bool {
-        guard !inputText.trimmingCharacters(in: .whitespaces).isEmpty else { return false }
-        switch ble.mode {
-        case .central: return ble.isReadyToSend
-        case .peripheral: return ble.subscribedCentralCount > 0
-        case .idle: return false
-        }
+    private var canSend: Bool {
+        !inputText.trimmingCharacters(in: .whitespaces).isEmpty && viewModel.canSend
     }
 
     var body: some View {
@@ -363,9 +353,7 @@ struct InputBar: View {
     }
 
     private func send() {
-        let text = inputText.trimmingCharacters(in: .whitespaces)
-        guard !text.isEmpty else { return }
-        ble.sendMessage(text)
+        viewModel.sendMessage(inputText)
         inputText = ""
     }
 }
