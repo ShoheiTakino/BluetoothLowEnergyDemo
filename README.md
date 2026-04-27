@@ -1,6 +1,21 @@
 # BluetoothLowEnergyDemo
 
-iPhone 2台をBLE（Bluetooth Low Energy）で接続し、双方向メッセージ通信を行うiOSデモアプリです。
+iPhone 2台をBLE（Bluetooth Low Energy）で接続し、双方向メッセージ通信の動作確認用iOSデモアプリです。
+
+<table>
+  <tr>
+    <td>
+      <video src="https://github.com/user-attachments/assets/1f9eee85-099d-479e-b745-e9b12e8e9bef" autoplay loop muted playsinline></video>
+    </td>
+    <td>
+      <video src="https://github.com/user-attachments/assets/8f8ce549-85c3-44c7-8f39-06fc726d4194" autoplay loop muted playsinline></video>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">Central側</td>
+    <td align="center">Peripheral側</td>
+  </tr>
+</table>
 
 ## 機能
 
