@@ -1,0 +1,4 @@
+// Local signing configuration - DO NOT COMMIT
+// Copy Local.xcconfig.sample to Local.xcconfig and fill in your values.
+
+DEVELOPMENT_TEAM = XP8M87ULF2
