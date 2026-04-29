@@ -1,6 +1,7 @@
 # BluetoothLowEnergyDemo
 
 iPhone 2台をBLE（Bluetooth Low Energy）で接続し、双方向メッセージ通信の動作確認用iOSデモアプリです。
+
 (※雑に作成して調査しながら進めているので、タイミングによってはコードが雑な場合があります🙇）
 
 <table>
