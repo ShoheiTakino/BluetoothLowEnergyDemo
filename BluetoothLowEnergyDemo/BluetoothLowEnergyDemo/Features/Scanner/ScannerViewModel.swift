@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 
+/// BLE スキャナー画面の状態管理。
 @Observable
 @MainActor
 final class ScannerViewModel {
@@ -26,6 +27,7 @@ final class ScannerViewModel {
         scanTask = runTask { [weak self] in
             guard let self else { return }
             for await device in service.scan() {
+                // 同一デバイスが再発見されたときは RSSI を最新値に更新する（重複追加しない）。
                 if let index = devices.firstIndex(where: { $0.id == device.id }) {
                     devices[index] = device
                 } else {
