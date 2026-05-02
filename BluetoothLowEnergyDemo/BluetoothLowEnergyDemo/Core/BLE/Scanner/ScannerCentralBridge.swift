@@ -1,8 +1,9 @@
 import CoreBluetooth
 
-/// CBCentralManagerDelegate（具体型）を受け取り、
-/// ScannerEventHandling（抽象型）に変換するブリッジ。
-/// これにより BLEScannerService は CBCentralManager に直接依存しない。
+/// `CBCentralManagerDelegate`（CoreBluetooth 具体型）を受け取り、
+/// `ScannerEventHandling`（ドメイン抽象型）に変換して転送するブリッジ。
+///
+/// このブリッジを挟むことで `BLEScannerService` は `CBCentralManager` に直接依存しない。
 final class ScannerCentralBridge: NSObject, CBCentralManagerDelegate, @unchecked Sendable {
     weak var handler: (any ScannerEventHandling)?
 
@@ -16,6 +17,7 @@ final class ScannerCentralBridge: NSObject, CBCentralManagerDelegate, @unchecked
         advertisementData: [String: Any],
         rssi RSSI: NSNumber
     ) {
+        // peripheral.name が nil の場合はアドバタイズデータからローカル名を取得する。
         let name = peripheral.name
             ?? advertisementData[CBAdvertisementDataLocalNameKey] as? String
         handler?.handleDiscovery(id: peripheral.identifier, name: name, rssi: RSSI.intValue)
