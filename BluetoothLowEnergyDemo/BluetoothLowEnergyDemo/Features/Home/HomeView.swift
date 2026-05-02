@@ -7,8 +7,10 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                // 新しい機能は AppFeature.all に追加するだけで自動的にカードが増える。
                 ForEach(viewModel.features) { feature in
                     FeatureCard(feature: feature) {
+                        // feature.id は AppRoute と一致するため、そのまま push できる。
                         router.push(feature.id)
                     }
                 }
@@ -19,6 +21,7 @@ struct HomeView: View {
     }
 }
 
+/// HomeView のみで使用するため private で定義する。
 private struct FeatureCard: View {
     let feature: AppFeature
     let action: () -> Void

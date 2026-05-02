@@ -1,6 +1,10 @@
 import SwiftUI
 import Observation
 
+/// ホーム画面に表示するアプリ機能の定義。
+///
+/// `id` に `AppRoute` を使うことで、カードタップ時に `router.push(feature.id)` だけで
+/// 画面遷移を完結させられる。
 struct AppFeature: Identifiable {
     let id: AppRoute
     let title: String
