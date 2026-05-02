@@ -1,5 +1,9 @@
 import SwiftUI
 
+/// チャット画面。メッセージの送受信・ログ表示・接続状態表示を担う。
+///
+/// Central モードでは接続前にデバイスリスト（`PeripheralListView`）を表示し、
+/// 接続後（`connectionState == .ready`）はメッセージエリアのみになる。
 struct ChatView: View {
     @State var viewModel: ChatViewModel
     @State private var inputText = ""
@@ -42,6 +46,7 @@ struct ChatView: View {
     }
 }
 
+/// ChatView のみで使用するため private で定義する。
 private struct MessageListView: View {
     let viewModel: ChatViewModel
 
@@ -70,6 +75,7 @@ private struct MessageListView: View {
                 }
                 .padding(.vertical, 12)
             }
+            // 新しいログ・メッセージが追加されたら自動的に末尾へスクロールする。
             .onChange(of: viewModel.logs.count) {
                 if let lastIndex = viewModel.logs.indices.last {
                     withAnimation { proxy.scrollTo("log_\(lastIndex)", anchor: .bottom) }

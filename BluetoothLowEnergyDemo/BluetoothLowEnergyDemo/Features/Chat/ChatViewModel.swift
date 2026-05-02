@@ -1,10 +1,15 @@
 import Foundation
 import Observation
 
+/// チャット画面の状態管理。Central / Peripheral 両モードを単一クラスで扱う。
+///
+/// `Session` 型によってモードを切り替え、各モードの差異を `canSend` の判定ロジックのみに閉じ込めている。
+/// BLE サービスはプロトコル経由で操作するため CoreBluetooth に直接依存しない。
 @Observable
 @MainActor
 final class ChatViewModel {
 
+    /// Central / Peripheral の違いを型として表現し、モード固有の操作（connect 等）を型安全に提供する。
     enum Session {
         case central(any BLECentralSessionProtocol)
         case peripheral(any BLEPeripheralSessionProtocol)
@@ -16,6 +21,7 @@ final class ChatViewModel {
             }
         }
 
+        /// 共通操作（start / sendMessage / stop / events）を呼ぶための基底プロトコルとして返す。
         var underlying: any BLEChatSessionProtocol {
             switch self {
             case .central(let s): return s
@@ -29,10 +35,12 @@ final class ChatViewModel {
     private(set) var connectionState: BLEConnectionState = .disconnected
     private(set) var discoveredDevices: [ScannedDevice] = []
     private(set) var subscribedCentralCount: Int = 0
+    /// 送信失敗時にセットされるエラー。View での alert 表示に使用する。
     private(set) var sendError: BLEChatError?
 
     var mode: BLEChatMode { session.mode }
 
+    /// Central: readyToSend 後に true、Peripheral: 購読中 Central が1台以上で true。
     var canSend: Bool {
         switch session {
         case .central: return connectionState == .ready
@@ -73,6 +81,8 @@ final class ChatViewModel {
         connectionState = .connecting
     }
 
+    /// メッセージを送信する。前後の空白をトリムし、空文字は無視する。
+    /// 送信失敗時は `sendError` にセットする（messages には追加しない）。
     func sendMessage(_ text: String) async {
         let trimmed = text.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
@@ -87,6 +97,8 @@ final class ChatViewModel {
     func clearSendError() {
         sendError = nil
     }
+
+    // MARK: - イベントハンドリング
 
     private func handle(_ event: BLEChatEvent) {
         switch event {

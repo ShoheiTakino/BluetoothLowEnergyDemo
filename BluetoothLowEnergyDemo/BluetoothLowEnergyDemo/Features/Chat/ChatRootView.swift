@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// チャットのモード選択画面。Central / Peripheral のどちらとして動作するかを選択する。
+///
+/// モードの決定責務をこの画面に持たせることで、`ChatView` は渡されたモードで動作するだけでよい。
 struct ChatRootView: View {
     @Environment(AppRouter.self) private var router
 
@@ -47,6 +50,7 @@ struct ChatRootView: View {
     }
 }
 
+/// ChatRootView のみで使用するため private で定義する。
 private struct ModeButton: View {
     let title: String
     let subtitle: String
