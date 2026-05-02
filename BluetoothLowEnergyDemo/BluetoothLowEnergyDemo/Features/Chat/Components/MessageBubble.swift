@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// チャットのメッセージ吹き出しを表示するコンポーネント。
+///
+/// `isSent` に応じて右寄せ（送信）・左寄せ（受信）を切り替える。
 struct MessageBubble: View {
     let message: BLEMessage
 
@@ -19,6 +22,7 @@ struct MessageBubble: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
+            // 最大幅を制限し、長文でも画面の端を超えないようにする。
             .frame(maxWidth: 280, alignment: message.isSent ? .trailing : .leading)
 
             if !message.isSent { Spacer() }

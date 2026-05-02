@@ -1,5 +1,9 @@
 import SwiftUI
 
+/// チャット画面上部に表示する接続状態バナー。
+///
+/// Central / Peripheral でそれぞれ異なる状態管理をしているため、
+/// `viewModel.mode` によって表示ロジックを分岐させている。
 struct StatusBanner: View {
     let viewModel: ChatViewModel
 

@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// Central モードでスキャン中に発見されたデバイスを一覧表示し、タップで接続するコンポーネント。
+///
+/// `ChatView` で `connectionState != .ready` のときのみ表示される。
 struct PeripheralListView: View {
     let viewModel: ChatViewModel
 
@@ -46,6 +49,7 @@ struct PeripheralListView: View {
         }
         .background(Color(white: 1.0))
         .overlay(alignment: .bottom) { Divider() }
+        // 最大高さを制限し、デバイスが多くてもメッセージエリアが確保されるようにする。
         .frame(maxHeight: 200)
     }
 }

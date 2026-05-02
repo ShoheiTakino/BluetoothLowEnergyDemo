@@ -36,6 +36,8 @@ struct InputBar: View {
     }
 
     private func send() {
+        // テキストを先にキャプチャして inputText をクリアすることで、
+        // 送信処理中に入力欄が空になり UX が向上する。
         let text = inputText
         inputText = ""
         Task { await viewModel.sendMessage(text) }
